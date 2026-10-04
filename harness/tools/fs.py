@@ -65,7 +65,20 @@ class Sandbox:
 
     # ---- tools ----------------------------------------------------------------
 
+    def _contains_root(self, p: Path) -> bool:
+        return any(self._under(r, p) for r in self.read_roots)
+
     def list_dir(self, path: str = ".") -> str:
+        raw = (self.root / (path or ".").lstrip("/")).resolve()
+        # Ancestors of allowed roots (e.g. the workspace root) can be listed, but
+        # only show entries leading to allowed roots.
+        if self._contains_root(raw) and not any(self._under(raw, r) for r in self.read_roots):
+            if not self._under(raw, self.root):
+                raise SandboxError(f"cannot access {path!r}: outside the allowed directories")
+            names = sorted(c.name + "/" for c in raw.iterdir()
+                           if c.is_dir() and (self._contains_root(c.resolve())
+                                              or any(self._under(c.resolve(), r) for r in self.read_roots)))
+            return "\n".join(names) if names else "(empty)"
         p = self.resolve(path)
         if not p.exists():
             raise SandboxError(f"path not found: {path}")

@@ -73,3 +73,12 @@ def test_diff_against_template(ws, tmp_path):
     (ws / "team_harness" / "policy.py").write_text("a = 1\nb = 2\n")
     d = diff_against_template(tmp_path / "tmpl", ws, "team_harness/policy.py")
     assert "+b = 2" in d
+
+
+def test_list_root_shows_only_allowed_dirs(ws):
+    sb = Sandbox(ws, read_roots=("team_harness", "docs"), write_roots=("team_harness",))
+    assert sb.list_dir(".") == "docs/\nteam_harness/"
+    with pytest.raises(SandboxError):
+        sb.list_dir("..")
+    with pytest.raises(SandboxError):
+        sb.list_dir("secret")
