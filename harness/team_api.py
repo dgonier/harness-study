@@ -25,6 +25,13 @@ class Message:
     text: str
     round: int = 0
     kind: str = "message"  # message | tool_call | tool_result | notice
+    visible_to: list[str] | str = "all"  # "all" or explicit agent names (outer resolves "self")
+    request_id: str | None = None  # set for tool_call / tool_result entries
+
+    def visible_for(self, agent: str) -> bool:
+        if self.visible_to == "all" or self.sender == agent:
+            return True
+        return isinstance(self.visible_to, list) and agent in self.visible_to
 
 
 @dataclass
