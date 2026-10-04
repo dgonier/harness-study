@@ -29,7 +29,7 @@ from harness import team_api  # noqa: E402
 from harness.team_api import Context, Decision, Message, StateStore, ToolRequest, ToolSpec  # noqa: E402
 
 ALLOWED_MODULES = frozenset({
-    "team_api", "harness.team_api", "harness",
+    "team_api", "harness.team_api",
     "math", "random", "re", "json", "collections", "itertools", "functools",
     "dataclasses", "typing", "hashlib", "statistics", "string", "enum", "copy",
     "heapq", "bisect", "datetime", "textwrap", "operator", "__future__",
@@ -55,7 +55,8 @@ def _from_team_code(globals_) -> bool:
 
 def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
     if _from_team_code(globals) and level == 0:
-        if name not in ALLOWED_MODULES and name.split(".")[0] not in ALLOWED_MODULES:
+        top = name.split(".")[0]
+        if name not in ALLOWED_MODULES and (top not in ALLOWED_MODULES or top in ("team_api", "harness")):
             violations.append({"kind": "import_blocked", "detail": name})
             raise ImportError(f"import of {name!r} is not allowed in team harness code")
     return _real_import(name, globals, locals, fromlist, level)
