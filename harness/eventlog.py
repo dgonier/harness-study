@@ -25,6 +25,9 @@ EVENT_TYPES = frozenset({
     "phase_start",
     "phase_end",
     "policy_error",
+    "model_input",
+    "model_output",
+    "model_error",
 })
 
 
